@@ -28,9 +28,14 @@ if (isset($_GET['id']) && isset($_GET['jumlah'])) {
         mysqli_stmt_bind_param($stmt_pesan, "iis", $id_barang, $id_pemasok, $pesan); // 'iis': id_barang (int), id_pemasok (int), pesan (string)
         mysqli_stmt_execute($stmt_pesan);
 
-        // Redirect ke halaman utama
-        header("Location: stockBarang.php");
-        exit();
+        if (mysqli_stmt_execute($stmt_pesan)) {
+            // Redirect dengan alert dialog
+            echo "<script>
+                alert('Pesan untuk barang {$barang['NamaBarang']} berhasil dikirim.');
+                window.location.href = 'stockBarang.php';
+            </script>";
+            exit();
+        }
     }
 
     mysqli_stmt_close($stmt);
