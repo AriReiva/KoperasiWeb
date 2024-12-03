@@ -7,8 +7,25 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Ambil KodePelanggan (dapat disesuaikan dengan ID pelanggan yang sesuai)
 $kodePelanggan = $_SESSION['ID']; // Misalnya kita simpan user_id di session saat login
+
+// Query untuk mengambil kodePemasok berdasarkan AdminId
+$query_pemasok = "SELECT kodePelanggan FROM pelanggan WHERE AdminId = '$kodePelanggan'";
+$result_pemasok = mysqli_query($conn, $query_pemasok);
+
+// Memeriksa apakah query berhasil dijalankan
+if ($result_pemasok) {
+    $supplierData = mysqli_fetch_assoc($result_pemasok);
+    if ($supplierData) {
+        $supplierID = $supplierData['kodePelanggan']; // Mengambil kodePemasok
+    } else {
+        echo "Data pemasok tidak ditemukan.";
+        exit;
+    }
+} else {
+    echo "Query gagal dijalankan: " . mysqli_error($conn);
+    exit;
+}
 
 if (isset($_POST['quantity'])) {
     foreach ($_POST['quantity'] as $kodeBarang => $quantity) {
@@ -28,12 +45,13 @@ if (isset($_POST['quantity'])) {
 
 // Proses checkout
 if (isset($_POST['checkout'])) {
+  
     $tanggal = date('Y-m-d');
     $nomorOrder = uniqid(''); // Nomor unik untuk setiap transaksi
 
     // Insert ke tabel transaksi
     $queryTransaksi = "INSERT INTO transaksi (TanggalOrder, KodePelanggan, TotalHarga) 
-                       VALUES ('$tanggal', '$kodePelanggan', 0)";
+                       VALUES ('$tanggal', '$supplierID', 0)";
     mysqli_query($conn, $queryTransaksi);
 
     // Ambil NomorOrder yang baru saja dimasukkan
@@ -107,7 +125,7 @@ if (isset($_POST['checkout'])) {
             <div class="offcanvas-body">
                 <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    <a class="nav-link active" aria-current="page" href="MenuUtama.php">Home</a>
                 </li>
                 <?php if ($_SESSION['level'] == 'Admin'): ?>
                     <li class="nav-item dropdown">
